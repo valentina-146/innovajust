@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <title>InnovaJusta · Registros</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+    <style>
+        .layout { display: flex; align-items: flex-start; min-height: calc(100vh - 96px); }
+        .layout > nav { flex: 0 0 230px; width: 230px; padding: 24px 16px; }
+        .layout > main { display: block; flex: 1; min-width: 0; width: 100%; margin: 0; padding: 24px; }
+        .layout .section { grid-column: auto; grid-row: auto; }
+        #estado-conexion { margin-bottom: 24px; }
+        .welcome { margin-bottom: 24px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
+        .card { display: flex; flex-direction: column; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
+        .card button { margin-top: auto; }
+        footer { margin-top: 28px; }
+        @media (max-width: 900px) {
+            .layout { flex-direction: column; }
+            .layout > nav { position: static; flex: auto; width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .layout > main { padding: 18px; }
+        }
+    </style>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <header>
+        <span class="brand">IJ</span>
+        <div>
+            <h1>InnovaJusta</h1>
+            <p>Emprendimientos, productos y ventas</p>
+        </div>
+    </header>
+
+    <div class="layout">
+        <nav aria-label="Secciones">
+            <button type="button" data-section="inicio" class="active" aria-pressed="true">Inicio</button>
+            <button type="button" data-section="emprendedor" aria-pressed="false">
+                Emprendedores
+            </button>
+            <button type="button" data-section="categoria" aria-pressed="false">
+                Categorías
+            </button>
+            <button type="button" data-section="producto" aria-pressed="false">
+                Productos
+            </button>
+            <button type="button" data-section="inventario" aria-pressed="false">
+                Inventario
+            </button>
+            <button type="button" data-section="venta" aria-pressed="false">
+                Ventas
+            </button>
+            <button type="button" data-section="detalle" aria-pressed="false">
+                Detalles de venta
+            </button>
+            <button type="button" data-section="pedido" aria-pressed="false">
+                Pedidos WhatsApp
+            </button>
+        </nav>
+
+    <main>
+        <div id="estado-conexion" role="status" aria-live="polite">Cargando catálogos…</div>
+        <section id="inicio" class="section active">
+            <div class="welcome">
+                <h2>Bienvenido a InnovaJusta</h2>
+                <p>Sistema de gestión empresarial</p>
+            </div>
+            <div class="grid">
+                <div class="card"><h3>Emprendedores</h3><p>Datos y contactos de los emprendedores.</p><button type="button" onclick="mostrar('emprendedor')">Registrar</button></div>
+                <div class="card"><h3>Categorías</h3><p>Clasificación de los productos.</p><button type="button" onclick="mostrar('categoria')">Registrar</button></div>
+                <div class="card"><h3>Productos</h3><p>Precios, categorías y existencias.</p><button type="button" onclick="mostrar('producto')">Registrar</button></div>
+                <div class="card"><h3>Ventas</h3><p>Productos vendidos y total de la venta.</p><button type="button" onclick="mostrar('venta')">Registrar</button></div>
+            </div>
+        </section>
+
+        <section id="emprendedor" class="section" hidden>
+            <h2>Emprendedores</h2>
+            <p>Los campos con * son obligatorios. Los IDs y la fecha de registro son automáticos.</p>
+
+            <form data-endpoint="/guardar-emprendedor">
+                <div class="fields">
+                    <label>
+                        Nombre completo *
+                        <input name="nombre" required maxlength="150" type="text">
+                    </label>
+
+                    <label>
+                        Tipo de documento *
+                        <select name="tipo_documento" required>
+                            <option>CC</option>
+                            <option>TI</option>
+                            <option>CE</option>
+                            <option>NIT</option>
+                            <option>Pasaporte</option>
+                            <option>Otro</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Número de documento *
+                        <input name="numero_documento" required maxlength="30" type="text">
+                    </label>
+
+                    <label>
+                        Teléfono
+                        <input name="telefono" maxlength="20" type="tel">
+                    </label>
+
+                    <label>
+                        Correo electrónico *
+                        <input name="correo" required maxlength="150" type="email">
+                    </label>
+
+                    <label>
+                        Dirección
+                        <input name="direccion" maxlength="255" type="text">
+                    </label>
+
+                    <label>
+                        Tipo de población
+                        <input name="tipo_poblacion" maxlength="100" type="text">
+                    </label>
+
+                    <label>
+                        Estado
+                        <select name="estado">
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Guardar registro</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="emprendedor">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="categoria" class="section" hidden>
+            <h2>Categorías</h2>
+            <p>Los campos con * son obligatorios. Los IDs y la fecha de registro son automáticos.</p>
+
+            <form data-endpoint="/guardar-categoria">
+                <div class="fields">
+                    <label>
+                        Nombre *
+                        <input name="nombre" required maxlength="100" type="text">
+                    </label>
+
+                    <label>
+                        Descripción
+                        <textarea name="descripcion" maxlength="10000" rows="3"></textarea>
+                    </label>
+
+                    <label>
+                        Estado
+                        <select name="estado">
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Guardar registro</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="categoria">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="producto" class="section" hidden>
+            <h2>Productos</h2>
+            <p>Los campos con * son obligatorios. Los IDs y la fecha de registro son automáticos.</p>
+
+            <form data-endpoint="/guardar-producto">
+                <div class="fields">
+                    <label>
+                        Emprendedor *
+                        <select name="id_emprendedor" required data-catalogo="emprendedores">
+                            <option value="">Selecciona…</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Categoría *
+                        <select name="id_categoria" required data-catalogo="categorias">
+                            <option value="">Selecciona…</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Nombre del producto *
+                        <input name="nombre" required maxlength="150" type="text">
+                    </label>
+
+                    <label>
+                        Precio de venta *
+                        <input
+                            name="precio_venta"
+                            required
+                            min="0"
+                            max="99999999.99"
+                            step="0.01"
+                            type="number"
+                        >
+                    </label>
+
+                    <label>
+                        Existencias iniciales *
+                        <input
+                            name="stock_actual"
+                            required
+                            min="0"
+                            max="2147483647"
+                            step="1"
+                            value="0"
+                            type="number"
+                        >
+                    </label>
+
+                    <label>
+                        Fecha de vencimiento (opcional)
+                        <input name="fecha_vencimiento" type="date">
+                    </label>
+
+                    <label>
+                        Descripción
+                        <textarea name="descripcion" maxlength="10000" rows="3"></textarea>
+                    </label>
+
+                    <label>
+                        Estado
+                        <select name="estado">
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Guardar registro</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="producto">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="inventario" class="section" hidden>
+            <h2>Inventario</h2>
+            <p>
+                Usa una entrada o una salida por movimiento. El stock se calcula automáticamente.
+                Las ventas ya descuentan stock: no registres otra salida por la misma venta.
+            </p>
+
+            <form data-endpoint="/guardar-inventario">
+                <div class="fields">
+                    <label>
+                        Producto *
+                        <select name="id_producto" required data-catalogo="productos">
+                            <option value="">Selecciona…</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Cantidad de entrada *
+                        <input
+                            name="cantidad_entrada"
+                            required
+                            min="0"
+                            max="2147483647"
+                            step="1"
+                            value="0"
+                            type="number"
+                        >
+                    </label>
+
+                    <label>
+                        Cantidad de salida *
+                        <input
+                            name="cantidad_salida"
+                            required
+                            min="0"
+                            max="2147483647"
+                            step="1"
+                            value="0"
+                            type="number"
+                        >
+                    </label>
+
+                    <label>
+                        Observaciones
+                        <textarea name="observaciones" maxlength="10000" rows="3"></textarea>
+                    </label>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Guardar registro</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="inventario">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="venta" class="section" hidden>
+            <h2>Ventas</h2>
+            <p>
+                Registra una venta confirmada. Añade productos del mismo emprendedor;
+                el total y las existencias se actualizan al guardar.
+            </p>
+
+            <form data-endpoint="/guardar-venta">
+                <div class="fields">
+                    <label>
+                        Emprendedor *
+                        <select name="id_emprendedor" required data-catalogo="emprendedores">
+                            <option value="">Selecciona…</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Método de contacto *
+                        <input
+                            name="metodo_contacto"
+                            required
+                            maxlength="100"
+                            value="WhatsApp"
+                            type="text"
+                        >
+                    </label>
+                </div>
+
+                <div class="venta-editor">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio unitario</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="lineas-venta"></tbody>
+                        </table>
+                    </div>
+
+                    <button type="button" id="agregar-linea" class="secondary">
+                        + Añadir producto
+                    </button>
+
+                    <p class="total">
+                        Total: <output id="total-venta">0,00</output>
+                    </p>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Confirmar venta</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="venta">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="detalle" class="section" hidden>
+            <h2>Detalles de venta</h2>
+            <p>
+                Estos registros se crean automáticamente desde Ventas.
+                Cada fila corresponde a un producto vendido.
+            </p>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="detalle">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <section id="pedido" class="section" hidden>
+            <h2>Pedidos WhatsApp</h2>
+            <p>Guarda el pedido en la base de datos. No envía mensajes ni descuenta inventario.</p>
+
+            <form data-endpoint="/guardar-pedido">
+                <div class="fields">
+                    <label>
+                        Emprendedor *
+                        <select name="id_emprendedor" required data-catalogo="emprendedores">
+                            <option value="">Selecciona…</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Detalle del pedido *
+                        <textarea name="detalle_pedido" required maxlength="10000" rows="3"></textarea>
+                    </label>
+
+                    <label>
+                        Canal *
+                        <input name="canal" required maxlength="50" value="WhatsApp" type="text">
+                    </label>
+
+                    <label>
+                        Estado
+                        <select name="estado">
+                            <option>Enviado</option>
+                            <option>Atendido</option>
+                            <option>Finalizado</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="message" role="status" aria-live="polite" hidden></div>
+                <button type="submit">Guardar registro</button>
+            </form>
+
+            <div class="list-heading">
+                <h3>Últimos 200 registros</h3>
+                <button type="button" class="secondary refresh" data-tipo="pedido">
+                    Actualizar
+                </button>
+            </div>
+
+            <div class="records" aria-live="polite">Cargando…</div>
+        </section>
+
+        <footer>Gestión local · MySQL / Flask</footer>
+    </main>
+    </div>
+</body>
+</html>
